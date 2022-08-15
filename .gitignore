@@ -1,0 +1,6 @@
+.*.swp
+.*.swo
+ft_strace
+debug-ft_strace
+*.o
+*.d

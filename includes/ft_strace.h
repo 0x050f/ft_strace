@@ -2,6 +2,7 @@
 # define FT_STRACE_H
 
 # include <errno.h>
+# include <stdarg.h>
 # include <stdbool.h>
 # include <stdlib.h>
 # include <stdio.h>

@@ -3,6 +3,22 @@
 static char		*prg_name;
 const x86_64_syscall_t x86_64_syscall[] = X86_64_SYSCALL;
 
+void			print_syscall(char *name, int argc, ...)
+{
+	va_list		ap;
+
+	fprintf(stderr, "%s(", name);
+	va_start(ap, argc);
+	for (int i = 0; i < argc; i++)
+	{
+		fprintf(stderr, "%#lx", va_arg(ap, unsigned long));
+		if (i != argc - 1)
+			fprintf(stderr, ",");
+	}
+	va_end(ap);
+	fprintf(stderr, ")\n");
+}
+
 void			get_syscalls(pid_t pid)
 {
 	struct user_regs_struct		regs;
@@ -14,7 +30,7 @@ void			get_syscalls(pid_t pid)
 		if (waitid(P_PID, pid, &si, WSTOPPED) || si.si_code != CLD_TRAPPED)
 			break ;
 		ptrace(PTRACE_GETREGS, pid, 0, &regs);
-		printf("rax: %ld - %s - %d args\n", regs.orig_rax, x86_64_syscall[regs.orig_rax].name, x86_64_syscall[regs.orig_rax].argc);
+		print_syscall(x86_64_syscall[regs.orig_rax].name, x86_64_syscall[regs.orig_rax].argc, regs.rdi, regs.rsi, regs.rdx, regs.r10, regs.r8, regs.r9);
 		ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
 		if (waitid(P_PID, pid, &si, WSTOPPED) || si.si_code != CLD_TRAPPED)
 			break ;

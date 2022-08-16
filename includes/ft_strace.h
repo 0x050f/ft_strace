@@ -6,9 +6,13 @@
 # include <stdlib.h>
 # include <stdio.h>
 # include <string.h>
+# include <sys/ptrace.h>
 # include <sys/stat.h>
+# include <sys/user.h>
 # include <sys/wait.h>
 # include <unistd.h>
+
+# include "x86_64_syscall.h"
 
 # define PRG_NAME "ft_strace"
 

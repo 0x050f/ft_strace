@@ -1,11 +1,14 @@
 #include "ft_strace.h"
 
 static char		*prg_name;
+const x86_64_syscall_t x86_64_syscall[] = X86_64_SYSCALL;
 
 int				strace(char *exec, char *argv[], char *envp[])
 {
-	int		status;
-	pid_t	pid;
+	struct user_regs_struct regs;
+	int				status;
+	siginfo_t		si;
+	pid_t			pid;
 
 	pid = fork();
 	if (pid < 0)
@@ -23,8 +26,27 @@ int				strace(char *exec, char *argv[], char *envp[])
 	}
 	else
 	{
-		wait(&status);
-		fprintf(stderr, "+++ exited with %d +++\n", WEXITSTATUS(status));
+		if (kill(pid, SIGSTOP))
+			fprintf(stderr, "%s: kill: %s\n", prg_name, strerror(errno));
+		else
+		{
+			if (ptrace(PTRACE_SEIZE, pid, NULL, NULL) < 0)
+				fprintf(stderr, "%s: ptrace: %s\n", prg_name, strerror(errno));
+			waitpid(pid, &status, 0);
+			while (1)
+			{
+				ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+				if (waitid(P_PID, pid, &si, WSTOPPED) || si.si_code != CLD_TRAPPED)
+					break ;
+				ptrace(PTRACE_GETREGS, pid, 0, &regs);
+				printf("rax: %ld - %s - %d args\n", regs.orig_rax, x86_64_syscall[regs.orig_rax].name, x86_64_syscall[regs.orig_rax].argc);
+				ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+				if (waitid(P_PID, pid, &si, WSTOPPED) || si.si_code != CLD_TRAPPED)
+					break ;
+			}
+			waitpid(pid, &status, 0);
+			fprintf(stderr, "+++ exited with %d +++\n", WEXITSTATUS(status));
+		}
 	}
 	return (WEXITSTATUS(status));
 }

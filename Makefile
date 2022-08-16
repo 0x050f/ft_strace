@@ -5,7 +5,8 @@ DIR_HEADERS	=	./includes/
 DIR_SRCS	=	./srcs/
 DIR_OBJS	=	./compiled_srcs/
 
-SRCS		=	ft_strace.c
+SRCS		=	ft_strace.c \
+				exec.c
 
 INCLUDES	=	ft_strace.h
 

@@ -2,54 +2,31 @@
 
 static char		*prg_name;
 
-char			*get_full_path(char *exec, char *path)
+int				strace(char *exec, char *argv[], char *envp[])
 {
-	char		*ptr;
-	char		*exec_full_path;
-	int			path_size;
-	int			len;
-	struct stat	statbuf;
+	int		status;
+	pid_t	pid;
 
-	if (!exec || !path)
-		return (NULL);
-	ptr = strtok(path, ":");
-	while (ptr)
+	pid = fork();
+	if (pid < 0)
 	{
-		len = strlen(ptr);
-		path_size = len + strlen(exec) + 1;
-		if (ptr[len - 1] != '/')
-			path_size++;
-		exec_full_path = malloc(sizeof(char) * path_size);
-		if (!exec_full_path)
-			return (NULL);
-		memset(exec_full_path, 0, sizeof(char) * path_size);
-		strcpy(exec_full_path, ptr);
-		if (ptr[len - 1] != '/')
-			exec_full_path[len] = '/';
-		strcat(exec_full_path, exec);
-		if (!stat(exec_full_path, &statbuf))
-			return (exec_full_path);
-		free(exec_full_path);
-		ptr = strtok(NULL, ":");
+		fprintf(stderr, "%s: fork: %s\n", prg_name, strerror(errno));
+		return (EXIT_FAILURE);
 	}
-	return (NULL);
-}
-
-char			*get_executable(char *name)
-{
-	char	*path;
-	char	*exec;
-
-	path = getenv("PATH");
-	if (!path)
-		return (NULL);
-	if (!strchr(name, '/'))
-		exec = get_full_path(name, path);
+	else if (!pid)
+	{
+		if (execve(exec, argv, envp) < 0)
+		{
+			fprintf(stderr, "%s: exec: %s\n", prg_name, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
 	else
-		exec = strdup(name);
-	if (!exec)
-		return (NULL);
-	return (exec);
+	{
+		wait(&status);
+		fprintf(stderr, "+++ exited with %d +++\n", WEXITSTATUS(status));
+	}
+	return (WEXITSTATUS(status));
 }
 
 bool			check_args(int argc, char *argv[])
@@ -69,8 +46,9 @@ bool			check_args(int argc, char *argv[])
 	return (true);
 }
 
-int				main(int argc, char *argv[])
+int				main(int argc, char *argv[], char *envp[])
 {
+	int		ret;
 	char	*exec;
 
 	if (!check_args(argc, argv))
@@ -78,11 +56,12 @@ int				main(int argc, char *argv[])
 	exec = get_executable(argv[1]);
 	if (!exec)
 	{
-		fprintf(stderr, "%s: %s: %s\n", prg_name, argv[1], strerror(errno));
+		fprintf(stderr, "%s: '%s': %s\n", prg_name, argv[1], strerror(errno));
 		free(prg_name);
 		return (EXIT_FAILURE);
 	}
+	ret = strace(exec, &argv[1], envp);
 	free(exec);
 	free(prg_name);
-	return (EXIT_SUCCESS);
+	return (ret);
 }

@@ -9,7 +9,10 @@ char			*get_full_path(char *exec, char *path)
 	struct stat	sb;
 
 	if (!exec || !path)
+	{
+		errno = ENOENT;
 		return (NULL);
+	}
 	ptr = strtok(path, ":");
 	while (ptr)
 	{
@@ -25,7 +28,8 @@ char			*get_full_path(char *exec, char *path)
 		if (ptr[len - 1] != '/')
 			exec_full_path[len] = '/';
 		strcat(exec_full_path, exec);
-		if (!stat(exec_full_path, &sb))
+		if (!stat(exec_full_path, &sb) &&
+((sb.st_mode & S_IFMT) == S_IFLNK || (sb.st_mode & S_IFMT) == S_IFREG))
 			return (exec_full_path);
 		free(exec_full_path);
 		ptr = strtok(NULL, ":");
@@ -39,16 +43,18 @@ char			*get_executable(char *name)
 	char		*path;
 	char		*exec;
 
-	path = getenv("PATH");
-	if (!path)
-		return (NULL);
 	if (!strchr(name, '/'))
-		exec = get_full_path(name, path);
-	else
 	{
-		if (stat(name, &sb))
-			return (NULL);
+		path = getenv("PATH");
+		exec = get_full_path(name, path);
+	}
+	else
 		exec = strdup(name);
+	if (stat(exec, &sb) ||
+((sb.st_mode & S_IFMT) != S_IFLNK && (sb.st_mode & S_IFMT) != S_IFREG))
+	{
+		errno = ENOENT;
+		return (NULL);
 	}
 	return (exec);
 }

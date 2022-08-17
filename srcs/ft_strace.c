@@ -1,8 +1,8 @@
 #include "ft_strace.h"
 
-static char		*prg_name;
-const x86_64_syscall_t x86_64_syscall[] = X86_64_SYSCALL;
-const char *sys_signame[] = SYS_SIGNAME;
+static char				*prg_name;
+const x86_64_syscall_t	x86_64_syscall[] = X86_64_SYSCALL;
+const char				*sys_signame[] = SYS_SIGNAME;
 
 void			print_syscall(char *name, int argc, ...)
 {
@@ -20,23 +20,60 @@ void			print_syscall(char *name, int argc, ...)
 	fprintf(stderr, ")");
 }
 
-void			get_syscalls(pid_t pid)
+int				get_syscalls(pid_t pid)
 {
 	struct user_regs_struct		regs;
 	siginfo_t					si;
+	bool						start;
+	bool						print;
+	int							result;
+	int							status;
+	int							signal;
 
+	result = 0;
+	signal = 0;
+	start = false;
+	print = true;
 	while (1)
 	{
-		ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-		if (waitid(P_PID, pid, &si, WSTOPPED) || si.si_code != CLD_TRAPPED)
+		if (ptrace(PTRACE_SYSCALL, pid, NULL, signal) < 0)
 			break ;
-		ptrace(PTRACE_GETREGS, pid, 0, &regs);
-		if (regs.rax == (unsigned long) -ENOSYS)
-			print_syscall(x86_64_syscall[regs.orig_rax].name, x86_64_syscall[regs.orig_rax].argc, regs.rdi, regs.rsi, regs.rdx, regs.r10, regs.r8, regs.r9);
+		if (waitpid(pid, &status, 0) < 0)
+			break ;
+		if (start && !ptrace(PTRACE_GETSIGINFO, pid, NULL, &si)
+&& si.si_signo != SIGTRAP)
+		{
+			signal = si.si_signo;
+			fprintf(stderr, "--- %s ---\n", sys_signame[si.si_signo]);
+		}
 		else
-			fprintf(stderr, " = %d\n", regs.rax);
+			signal = 0;
+		if (ptrace(PTRACE_GETREGS, pid, 0, &regs) < 0)
+			break ;
+		if (start || !strcmp("execve", x86_64_syscall[regs.orig_rax].name))
+		{
+			if (regs.rax == (unsigned long) -ENOSYS && print)
+			{
+				result = 1;
+				print_syscall(x86_64_syscall[regs.orig_rax].name, x86_64_syscall[regs.orig_rax].argc, regs.rdi, regs.rsi, regs.rdx, regs.r10, regs.r8, regs.r9);
+			}
+			else
+			{
+				if (print && result == 1)
+				{
+					result = 0;
+					fprintf(stderr, " = %d\n", regs.rax);
+				}
+				if (!start && (int)regs.rax < 0) //execve failed
+					print = false;
+				else if (!start)
+					start = true;
+			}
+		}
 	}
-	fprintf(stderr, " = ?\n");
+	if (start && print && result == 1)
+		fprintf(stderr, " = ?\n");
+	return (status);
 }
 
 void		block_signals()
@@ -66,8 +103,6 @@ int				strace(char *exec, char *argv[], char *envp[])
 	else if (!pid)
 	{
 		raise(SIGSTOP);
-//		if (kill(getpid(), SIGSTOP))
-//			fprintf(stderr, "%s: kill: %s\n", prg_name, strerror(errno));
 		if (execve(exec, argv, envp) < 0)
 		{
 			fprintf(stderr, "%s: exec: %s\n", prg_name, strerror(errno));
@@ -82,13 +117,10 @@ int				strace(char *exec, char *argv[], char *envp[])
 	sigprocmask(SIG_SETMASK, &set, NULL);
 	waitpid(pid, &status, 0);
 	block_signals();
-	if (ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD) < 0)
-		fprintf(stderr, "%s: ptrace: %s\n", prg_name, strerror(errno));
-	get_syscalls(pid);
-	waitpid(pid, &status, 0);
+	status = get_syscalls(pid);
 	if (WIFSIGNALED(status))
 	{
-		fprintf(stderr, "+++ exited by %s +++\n", sys_signame[WTERMSIG(status)]);
+		fprintf(stderr, "+++ killed by %s +++\n", sys_signame[WTERMSIG(status)]);
 		kill(getpid(), WTERMSIG(status));
 	}
 	else

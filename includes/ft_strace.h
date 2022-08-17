@@ -14,6 +14,7 @@
 # include <unistd.h>
 
 # include "x86_64_syscall.h"
+# include "sys_signame.h"
 
 # define PRG_NAME "ft_strace"
 

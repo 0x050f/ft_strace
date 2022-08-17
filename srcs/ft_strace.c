@@ -2,6 +2,7 @@
 
 static char		*prg_name;
 const x86_64_syscall_t x86_64_syscall[] = X86_64_SYSCALL;
+const char *sys_signame[] = SYS_SIGNAME;
 
 void			print_syscall(char *name, int argc, ...)
 {
@@ -13,10 +14,10 @@ void			print_syscall(char *name, int argc, ...)
 	{
 		fprintf(stderr, "%#lx", va_arg(ap, unsigned long));
 		if (i != argc - 1)
-			fprintf(stderr, ",");
+			fprintf(stderr, ", ");
 	}
 	va_end(ap);
-	fprintf(stderr, ")\n");
+	fprintf(stderr, ")");
 }
 
 void			get_syscalls(pid_t pid)
@@ -30,15 +31,29 @@ void			get_syscalls(pid_t pid)
 		if (waitid(P_PID, pid, &si, WSTOPPED) || si.si_code != CLD_TRAPPED)
 			break ;
 		ptrace(PTRACE_GETREGS, pid, 0, &regs);
-		print_syscall(x86_64_syscall[regs.orig_rax].name, x86_64_syscall[regs.orig_rax].argc, regs.rdi, regs.rsi, regs.rdx, regs.r10, regs.r8, regs.r9);
-		ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
-		if (waitid(P_PID, pid, &si, WSTOPPED) || si.si_code != CLD_TRAPPED)
-			break ;
+		if (regs.rax == (unsigned long) -ENOSYS)
+			print_syscall(x86_64_syscall[regs.orig_rax].name, x86_64_syscall[regs.orig_rax].argc, regs.rdi, regs.rsi, regs.rdx, regs.r10, regs.r8, regs.r9);
+		else
+			fprintf(stderr, " = %d\n", regs.rax);
 	}
+	fprintf(stderr, " = ?\n");
+}
+
+void		block_signals()
+{
+	sigset_t		set;
+
+	sigaddset(&set, SIGHUP);
+	sigaddset(&set, SIGINT);
+	sigaddset(&set, SIGQUIT);
+	sigaddset(&set, SIGPIPE);
+	sigaddset(&set, SIGTERM);
+	sigprocmask(SIG_BLOCK, &set, NULL);
 }
 
 int				strace(char *exec, char *argv[], char *envp[])
 {
+	sigset_t		set;
 	int				status;
 	pid_t			pid;
 
@@ -50,23 +65,34 @@ int				strace(char *exec, char *argv[], char *envp[])
 	}
 	else if (!pid)
 	{
+		raise(SIGSTOP);
+//		if (kill(getpid(), SIGSTOP))
+//			fprintf(stderr, "%s: kill: %s\n", prg_name, strerror(errno));
 		if (execve(exec, argv, envp) < 0)
 		{
 			fprintf(stderr, "%s: exec: %s\n", prg_name, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 	}
-	if (kill(pid, SIGSTOP))
-		fprintf(stderr, "%s: kill: %s\n", prg_name, strerror(errno));
-	else
-	{
-		if (ptrace(PTRACE_SEIZE, pid, NULL, NULL) < 0)
-			fprintf(stderr, "%s: ptrace: %s\n", prg_name, strerror(errno));
-		waitpid(pid, &status, 0);
-		get_syscalls(pid);
-	}
+	if (ptrace(PTRACE_SEIZE, pid, NULL, NULL) < 0)
+		fprintf(stderr, "%s: ptrace: %s\n", prg_name, strerror(errno));
+	if (ptrace(PTRACE_INTERRUPT, pid, NULL, NULL) < 0)
+		fprintf(stderr, "%s: ptrace: %s\n", prg_name, strerror(errno));
+	sigemptyset(&set);
+	sigprocmask(SIG_SETMASK, &set, NULL);
 	waitpid(pid, &status, 0);
-	fprintf(stderr, "+++ exited with %d +++\n", WEXITSTATUS(status));
+	block_signals();
+	if (ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD) < 0)
+		fprintf(stderr, "%s: ptrace: %s\n", prg_name, strerror(errno));
+	get_syscalls(pid);
+	waitpid(pid, &status, 0);
+	if (WIFSIGNALED(status))
+	{
+		fprintf(stderr, "+++ exited by %s +++\n", sys_signame[WTERMSIG(status)]);
+		kill(getpid(), WTERMSIG(status));
+	}
+	else
+		fprintf(stderr, "+++ exited with %d +++\n", WEXITSTATUS(status));
 	return (WEXITSTATUS(status));
 }
 

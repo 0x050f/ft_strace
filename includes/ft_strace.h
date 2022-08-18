@@ -2,6 +2,7 @@
 # define FT_STRACE_H
 
 # define _GNU_SOURCE
+# include <elf.h>
 # include <errno.h>
 # include <sched.h>
 # include <stdarg.h>
@@ -16,10 +17,30 @@
 # include <sys/wait.h>
 # include <unistd.h>
 
-# include "x86_64_syscall.h"
+# include "syscall.h"
 # include "sys_signame.h"
 
 # define PRG_NAME "ft_strace"
+
+struct i386_user_regs_struct {
+	int		ebx;
+	int		ecx;
+	int		edx;
+	int		esi;
+	int		edi;
+	int		ebp;
+	int		eax;
+	int		xds;
+	int		xes;
+	int		xfs;
+	int		xgs;
+	int		orig_eax;
+	int		eip;
+	int		xcs;
+	int		eflags;
+	int		esp;
+	int		xss;
+};
 
 /* exec.c */
 char			*get_executable(char *name);

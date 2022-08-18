@@ -9,7 +9,9 @@ SRCS		=	ft_strace.c \
 				exec.c
 
 INCLUDES	=	ft_strace.h \
+				syscall.h \
 				x86_64_syscall.h \
+				i386_syscall.h \
 				sys_signame.h
 
 OBJS		=	$(SRCS:%.c=$(DIR_OBJS)%.o)

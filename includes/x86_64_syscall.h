@@ -81,7 +81,7 @@
 [ 76] = {"truncate", 2, {STR, PTR, 0, 0, 0, 0}, INT}, \
 [ 77] = {"ftruncate", 2, {INT, PTR, 0, 0, 0, 0}, INT}, \
 [ 78] = {"getdents", 3, {ULONG, STRUCT_LINUX_DIR, ULONG, 0, 0, 0}, ULONG}, \
-[ 79] = {"getcwd", 2, {STR, ULONG, 0, 0, 0, 0}, STR}, \
+[ 79] = {"getcwd", 2, {PTR, ULONG, 0, 0, 0, 0}, STR}, \
 [ 80] = {"chdir", 1, {STR, 0, 0, 0, 0, 0}, INT}, \
 [ 81] = {"fchdir", 1, {INT, 0, 0, 0, 0, 0}, INT}, \
 [ 82] = {"rename", 2, {STR, STR, 0, 0, 0, 0}, INT}, \

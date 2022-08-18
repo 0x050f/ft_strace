@@ -1,6 +1,7 @@
 #include "ft_strace.h"
 
 static char				*prg_name;
+int						n_envp;
 const char				*sys_signame[] = SYS_SIGNAME;
 
 void		block_signals(pid_t pid)
@@ -53,7 +54,7 @@ int				strace(char *exec, char *argv[], char *envp[])
 	return (WEXITSTATUS(status));
 }
 
-bool			check_args(int argc, char *argv[])
+bool			check_args(int argc, char *argv[], char *envp[])
 {
 	prg_name = strdup((*argv[0]) ? argv[0] : PRG_NAME);
 	if (!prg_name)
@@ -67,6 +68,9 @@ bool			check_args(int argc, char *argv[])
 		free(prg_name);
 		return (false);
 	}
+	n_envp = 0;
+	while (envp[n_envp])
+		n_envp++;
 	return (true);
 }
 
@@ -77,7 +81,7 @@ int				main(int argc, char *argv[], char *envp[])
 
 	prg_name = NULL;
 	exec = NULL;
-	if (!check_args(argc, argv))
+	if (!check_args(argc, argv, envp))
 		return (EXIT_FAILURE);
 	exec = get_executable(argv[1]);
 	if (!exec)

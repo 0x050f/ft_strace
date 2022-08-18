@@ -3,6 +3,35 @@
 const syscall_t			x86_64_syscall[] = X86_64_SYSCALL;
 const syscall_t			i386_syscall[] = I386_SYSCALL;
 extern const char		*sys_signame[];
+extern int				n_envp;
+
+char			*escape(unsigned char *buffer, size_t size)
+{
+	int			l;
+	char		*dest;
+
+	dest = calloc(size * 4 + 1, sizeof(char));
+	if (!dest)
+		return (NULL);
+	l = 0;
+	for (size_t i = 0; i < size; i++) {
+		if (buffer[i] == '\n')
+			l += sprintf(dest + l, "\\n");
+		else if (buffer[i] == '\t')
+			l += sprintf(dest + l, "\\t");
+		else if (buffer[i] == '\r')
+			l += sprintf(dest + l, "\\r");
+		else if (buffer[i] == '\v')
+			l += sprintf(dest + l, "\\v");
+		else if (buffer[i] == '\f')
+			l += sprintf(dest + l, "\\f");
+		else if (buffer[i] < 32 && buffer[i] > 126)
+			l += sprintf(dest + l, "\\%u", buffer[i]);
+		else
+			dest[l++] = buffer[i];
+	}
+	return (dest);
+}
 
 void			print_syscall(pid_t pid, syscall_t syscall, int argc, ...)
 {
@@ -40,14 +69,7 @@ void			print_syscall(pid_t pid, syscall_t syscall, int argc, ...)
 			fprintf(stderr, "]");
 		}
 		else if (syscall.type_args[i] == ENVP)
-		{
-			char **envp = va_arg(ap, char **);
-
-			int i = 0;
-			while (envp[i])
-				i++;
-			fprintf(stderr, "%p /* %d vars */", envp, i);
-		}
+			fprintf(stderr, "%p /* %d vars */", va_arg(ap, void *), n_envp);
 		else if (syscall.type_args[i] == STR)
 		{
 			remote[0].iov_base = (void *)va_arg(ap, void *);
@@ -57,10 +79,15 @@ void			print_syscall(pid_t pid, syscall_t syscall, int argc, ...)
 				fprintf(stderr, "%#lx", remote[0].iov_base);
 			else
 			{
-				if (memchr(local[0].iov_base, 0, BUFFER_SIZE) - local[0].iov_base > 48)
-					fprintf(stderr, "\"%.32s\"...", local[0].iov_base);
+				int len = memchr(local[0].iov_base, 0, BUFFER_SIZE) - local[0].iov_base;
+				char *escaped = escape(local[0].iov_base, len);
+				if (!escaped)
+					break ;
+				if (len > 48)
+					fprintf(stderr, "\"%.32s\"...", escaped);
 				else
-					fprintf(stderr, "\"%s\"", local[0].iov_base);
+					fprintf(stderr, "\"%s\"", escaped);
+				free(escaped);
 			}
 		}
 		else

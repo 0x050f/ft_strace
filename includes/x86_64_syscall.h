@@ -1,6 +1,8 @@
 #ifndef X86_64_SYSCALL_H
 # define X86_64_SYSCALL_H
 
+# define MAX_X86_64_SYSCALL 335
+
 # define X86_64_SYSCALL { \
 [  0] = {"read", 3, {INT, PTR, INT, 0, 0, 0}, INT}, \
 [  1] = {"write", 3, {INT, STR, INT, 0, 0, 0}, INT}, \

@@ -5,7 +5,7 @@ const syscall_t			i386_syscall[] = I386_SYSCALL;
 extern const char		*sys_signame[];
 extern int				n_envp;
 
-char			*escape(unsigned char *buffer, size_t size)
+char			*escape(uint8_t *buffer, size_t size)
 {
 	int			l;
 	char		*dest;
@@ -25,8 +25,8 @@ char			*escape(unsigned char *buffer, size_t size)
 			l += sprintf(dest + l, "\\v");
 		else if (buffer[i] == '\f')
 			l += sprintf(dest + l, "\\f");
-		else if (buffer[i] < 32 && buffer[i] > 126)
-			l += sprintf(dest + l, "\\%u", buffer[i]);
+		else if (buffer[i] < 32 || buffer[i] > 126)
+			l += sprintf(dest + l, "\\%d", buffer[i]);
 		else
 			dest[l++] = buffer[i];
 	}
@@ -104,7 +104,7 @@ void			handle_x86_64_syscall(pid_t pid, syscall_handle_t *handler, struct user_r
 {
 	if (handler->start || !strcmp("execve", x86_64_syscall[regs->orig_rax].name))
 	{
-		if (regs->rax == (unsigned long) -ENOSYS && handler->print && !handler->result)
+		if (regs->rax == (unsigned long) -ENOSYS && handler->print && !handler->result && regs->orig_rax < MAX_X86_64_SYSCALL)
 		{
 			handler->result = true;
 			print_syscall(pid, x86_64_syscall[regs->orig_rax], x86_64_syscall[regs->orig_rax].argc, regs->rdi, regs->rsi, regs->rdx, regs->r10, regs->r8, regs->r9);
@@ -132,7 +132,7 @@ void			handle_x86_64_syscall(pid_t pid, syscall_handle_t *handler, struct user_r
 
 void			handle_i386_syscall(pid_t pid, syscall_handle_t *handler, struct i386_user_regs_struct *regs)
 {
-	if (regs->eax == -ENOSYS && handler->print && !handler->result)
+	if (regs->eax == -ENOSYS && handler->print && !handler->result && regs->orig_eax < MAX_I386_SYSCALL)
 	{
 		handler->result = true;
 		print_syscall(pid, i386_syscall[regs->orig_eax], i386_syscall[regs->orig_eax].argc, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi, regs->ebp);

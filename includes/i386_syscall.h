@@ -1,6 +1,8 @@
 #ifndef I386_SYSCALL_H
 # define I386_SYSCALL_H
 
+# define MAX_I386_SYSCALL 403
+
 # define I386_SYSCALL { \
 [  0] = {"restart_syscall", 0, {0, 0, 0, 0, 0, 0}, LONG}, \
 [  1] = {"exit", 1, {INT, 0, 0, 0, 0, 0}, 0}, \

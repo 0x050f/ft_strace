@@ -11,27 +11,53 @@ void			print_syscall(pid_t pid, syscall_t syscall, int argc, ...)
 	ssize_t			nread;
 	va_list			ap;
 
-	local[0].iov_base = malloc(4096);
-	local[0].iov_len = 4096;
+	local[0].iov_base = malloc(BUFFER_SIZE);
+	if (!local[0].iov_base)
+		return ;
+	local[0].iov_len = BUFFER_SIZE;
 	fprintf(stderr, "%s(", syscall.name);
 	va_start(ap, argc);
 	for (int i = 0; i < argc; i++)
 	{
-		memset(local[0].iov_base, 0, 4096);
+		memset(local[0].iov_base, 0, BUFFER_SIZE);
 		if (syscall.type_args[i] == INT)
 			fprintf(stderr, "%d", va_arg(ap, int));
 		else if (syscall.type_args[i] == ULONG)
 			fprintf(stderr, "%ld", va_arg(ap, unsigned long));
+		else if (syscall.type_args[i] == ARGV)
+		{
+			char **argv = va_arg(ap, char **);
+
+			int i = 0;
+			fprintf(stderr, "[");
+			while (argv[i])
+			{
+				if (i != 0)
+					fprintf(stderr, ", ", *argv);
+				fprintf(stderr, "\"%s\"", argv[i]);
+				i++;
+			}
+			fprintf(stderr, "]");
+		}
+		else if (syscall.type_args[i] == ENVP)
+		{
+			char **envp = va_arg(ap, char **);
+
+			int i = 0;
+			while (envp[i])
+				i++;
+			fprintf(stderr, "%p /* %d vars */", envp, i);
+		}
 		else if (syscall.type_args[i] == STR)
 		{
 			remote[0].iov_base = (void *)va_arg(ap, void *);
-			remote[0].iov_len = 4096;
+			remote[0].iov_len = BUFFER_SIZE;
 			nread = process_vm_readv(pid, local, 1, remote, 1, 0);
 			if (nread < 0)
 				fprintf(stderr, "%#lx", remote[0].iov_base);
 			else
 			{
-				if (memchr(local[0].iov_base, 0, 4096) - local[0].iov_base > 48)
+				if (memchr(local[0].iov_base, 0, BUFFER_SIZE) - local[0].iov_base > 48)
 					fprintf(stderr, "\"%.32s\"...", local[0].iov_base);
 				else
 					fprintf(stderr, "\"%s\"", local[0].iov_base);
@@ -51,7 +77,7 @@ void			handle_x86_64_syscall(pid_t pid, syscall_handle_t *handler, struct user_r
 {
 	if (handler->start || !strcmp("execve", x86_64_syscall[regs->orig_rax].name))
 	{
-		if (regs->rax == (unsigned long) -ENOSYS && handler->print)
+		if (regs->rax == (unsigned long) -ENOSYS && handler->print && !handler->result)
 		{
 			handler->result = true;
 			print_syscall(pid, x86_64_syscall[regs->orig_rax], x86_64_syscall[regs->orig_rax].argc, regs->rdi, regs->rsi, regs->rdx, regs->r10, regs->r8, regs->r9);
@@ -79,7 +105,7 @@ void			handle_x86_64_syscall(pid_t pid, syscall_handle_t *handler, struct user_r
 
 void			handle_i386_syscall(pid_t pid, syscall_handle_t *handler, struct i386_user_regs_struct *regs)
 {
-	if (regs->eax == -ENOSYS && handler->print)
+	if (regs->eax == -ENOSYS && handler->print && !handler->result)
 	{
 		handler->result = true;
 		print_syscall(pid, i386_syscall[regs->orig_eax], i386_syscall[regs->orig_eax].argc, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi, regs->ebp);

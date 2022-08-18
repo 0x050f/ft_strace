@@ -49,6 +49,8 @@ typedef struct	syscall_handle_s {
 	int			mode;
 }				syscall_handle_t;
 
+# define BUFFER_SIZE 4096
+
 /* exec.c */
 char			*get_executable(char *name);
 

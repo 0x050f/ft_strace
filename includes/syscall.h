@@ -4,7 +4,18 @@
 # include "x86_64_syscall.h"
 # include "i386_syscall.h"
 
-#define MAX_ARGS 6
+
+# define MAX_ARGS 6
+
+typedef struct	syscall_s {
+	char		*name;
+	int			argc;
+	int			type_args[MAX_ARGS];
+	int			type_ret;
+}				syscall_t;
+
+# define MODE_64BITS		0
+# define MODE_32BITS		1
 
 /* TODO: More flags */
 # define INT				1

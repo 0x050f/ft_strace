@@ -42,7 +42,17 @@ struct i386_user_regs_struct {
 	int		xss;
 };
 
+typedef struct	syscall_handle_s {
+	bool		start;
+	bool		print;
+	bool		result;
+	int			mode;
+}				syscall_handle_t;
+
 /* exec.c */
 char			*get_executable(char *name);
+
+/* syscall.c */
+int				get_syscalls(pid_t pid);
 
 #endif

@@ -6,7 +6,8 @@ DIR_SRCS	=	./srcs/
 DIR_OBJS	=	./compiled_srcs/
 
 SRCS		=	ft_strace.c \
-				exec.c
+				exec.c \
+				syscall.c
 
 INCLUDES	=	ft_strace.h \
 				syscall.h \

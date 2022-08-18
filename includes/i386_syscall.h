@@ -1,15 +1,6 @@
 #ifndef I386_SYSCALL_H
 # define I386_SYSCALL_H
 
-# define MAX_ARGS 6
-
-typedef struct	i386_syscall_s {
-	char		*name;
-	int			argc;
-	int			type_args[MAX_ARGS];
-	int			type_ret;
-}				i386_syscall_t;
-
 # define I386_SYSCALL { \
 [  0] = {"restart_syscall", 0, {0, 0, 0, 0, 0, 0}, 0}, \
 [  1] = {"exit", 1, {0, 0, 0, 0, 0, 0}, 0}, \

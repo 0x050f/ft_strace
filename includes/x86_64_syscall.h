@@ -1,15 +1,6 @@
 #ifndef X86_64_SYSCALL_H
 # define X86_64_SYSCALL_H
 
-# define MAX_ARGS 6
-
-typedef struct	x86_64_syscall_s {
-	char		*name;
-	int			argc;
-	int			type_args[MAX_ARGS];
-	int			type_ret;
-}				x86_64_syscall_t;
-
 # define X86_64_SYSCALL { \
 [  0] = {"read", 3, {INT, PTR, INT, 0, 0, 0}, INT}, \
 [  1] = {"write", 3, {INT, STR, INT, 0, 0, 0}, INT}, \

@@ -90,6 +90,14 @@ void			print_syscall(pid_t pid, syscall_t syscall, int argc, ...)
 				free(escaped);
 			}
 		}
+		else if (syscall.type_args[i] == PTR)
+		{
+			unsigned long ptr = va_arg(ap, unsigned long);
+			if (!ptr)
+				fprintf(stderr, "NULL", ptr);
+			else
+				fprintf(stderr, "%#lx", ptr);
+		}
 		else
 			fprintf(stderr, "%#lx", va_arg(ap, unsigned long));
 		if (i != argc - 1)

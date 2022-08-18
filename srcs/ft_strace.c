@@ -46,6 +46,8 @@ int				strace(char *exec, char *argv[], char *envp[])
 	status = get_syscalls(pid);
 	if (WIFSIGNALED(status))
 	{
+		free(exec);
+		free(prg_name);
 		fprintf(stderr, "+++ killed by %s +++\n", sys_signame[WTERMSIG(status)]);
 		kill(getpid(), WTERMSIG(status));
 	}

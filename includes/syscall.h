@@ -47,17 +47,18 @@ typedef struct	syscall_s {
 # define STRUCT_LINUX_DIR	27
 # define STRUCT_RLIMIT		28
 # define STRUCT_SYSINFO		29
-# define STRUCT_TMS			30
-# define PIPE				31
-# define SV					32
-# define KEY				33
-# define MODE				34
-# define CLOCK				35
-# define PTRACE				36
-# define ID_T				37
-# define DEV				38
-# define TIME				39
-# define ARGV				40
-# define ENVP				41
+# define STRUCT_SIGINFO		30
+# define STRUCT_TMS			31
+# define PIPE				32
+# define SV					33
+# define KEY				34
+# define MODE				35
+# define CLOCK				36
+# define PTRACE				37
+# define ID_T				38
+# define DEV				39
+# define TIME				40
+# define ARGV				41
+# define ENVP				42
 
 #endif

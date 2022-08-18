@@ -57,4 +57,10 @@ char			*get_executable(char *name);
 /* syscall.c */
 int				get_syscalls(pid_t pid);
 
+/* print_type.c */
+void			print_siginfo(siginfo_t *si);
+void			print_argv(char **argv);
+void			print_string(pid_t pid, va_list ap);
+void			print_ptr(void *ptr);
+
 #endif

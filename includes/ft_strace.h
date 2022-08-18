@@ -1,7 +1,9 @@
 #ifndef FT_STRACE_H
 # define FT_STRACE_H
 
+# define _GNU_SOURCE
 # include <errno.h>
+# include <sched.h>
 # include <stdarg.h>
 # include <stdbool.h>
 # include <stdlib.h>
@@ -9,6 +11,7 @@
 # include <string.h>
 # include <sys/ptrace.h>
 # include <sys/stat.h>
+# include <sys/uio.h>
 # include <sys/user.h>
 # include <sys/wait.h>
 # include <unistd.h>

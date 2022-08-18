@@ -8,7 +8,9 @@ DIR_OBJS	=	./compiled_srcs/
 SRCS		=	ft_strace.c \
 				exec.c
 
-INCLUDES	=	ft_strace.h
+INCLUDES	=	ft_strace.h \
+				x86_64_syscall.h \
+				sys_signame.h
 
 OBJS		=	$(SRCS:%.c=$(DIR_OBJS)%.o)
 DEPS		=	$(SRCS:%.c=$(DIR_OBJS)%.d)

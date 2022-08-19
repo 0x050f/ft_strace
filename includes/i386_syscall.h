@@ -9,7 +9,7 @@
 [  2] = {"fork", 0, {0, 0, 0, 0, 0, 0}, INT}, \
 [  3] = {"read", 3, {INT, PTR, INT, 0, 0, 0}, INT}, \
 [  4] = {"write", 3, {INT, STR, INT, 0, 0, 0}, INT}, \
-[  5] = {"open", 3, {STR, FLAG_OPEN, 0, 0, 0, 0}, INT}, \
+[  5] = {"open", 3, {STR, FLAG_OPEN, MODE, 0, 0, 0}, INT}, \
 [  6] = {"close", 1, {INT, 0, 0, 0, 0, 0}, INT}, \
 [  7] = {"waitpid", 3, {INT, PTR, INT, 0, 0, 0}, INT}, \
 [  8] = {"creat", 2, {STR, MODE, 0, 0, 0, 0}, INT}, \
@@ -71,7 +71,7 @@
 [ 64] = {"getppid", 0, {0, 0, 0, 0, 0, 0}, 0}, \
 [ 65] = {"getpgrp", 0, {0, 0, 0, 0, 0, 0}, 0}, \
 [ 66] = {"setsid", 0, {0, 0, 0, 0, 0, 0}, 0}, \
-[ 67] = {"sigaction", 3, {0, 0, 0, 0, 0, 0}, 0}, \
+[ 67] = {"sigaction", 3, {SIGNAL, STRUCT_SIGACT, STRUCT_SIGACT, 0, 0, 0}, INT}, \
 [ 68] = {"sgetmask", 0, {0, 0, 0, 0, 0, 0}, 0}, \
 [ 69] = {"ssetmask", 1, {0, 0, 0, 0, 0, 0}, 0}, \
 [ 70] = {"setreuid", 2, {0, 0, 0, 0, 0, 0}, 0}, \
@@ -295,7 +295,7 @@
 [292] = {"inotify_add_watch", 3, {0, 0, 0, 0, 0, 0}, 0}, \
 [293] = {"inotify_rm_watch", 2, {0, 0, 0, 0, 0, 0}, 0}, \
 [294] = {"migrate_pages", 4, {0, 0, 0, 0, 0, 0}, 0}, \
-[295] = {"openat", 4, {0, 0, 0, 0, 0, 0}, 0}, \
+[295] = {"openat", 4, {INT, STR, FLAG_OPEN, MODE, 0, 0}, INT}, \
 [296] = {"mkdirat", 3, {0, 0, 0, 0, 0, 0}, 0}, \
 [297] = {"mknodat", 4, {0, 0, 0, 0, 0, 0}, 0}, \
 [298] = {"fchownat", 5, {0, 0, 0, 0, 0, 0}, 0}, \

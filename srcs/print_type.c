@@ -125,6 +125,37 @@ void			print_string(pid_t pid, va_list ap)
 	free(local[0].iov_base);
 }
 
+void			print_flag_open(int flags)
+{
+	bool	first = true;
+	int		flag_list[] = {O_APPEND, O_ASYNC, O_CLOEXEC, O_CREAT, O_DIRECT,
+O_DIRECTORY, O_DSYNC, O_EXCL, O_LARGEFILE, O_NOATIME, O_NOCTTY, O_NOFOLLOW,
+O_NONBLOCK, O_PATH, O_SYNC, O_TMPFILE, O_TRUNC};
+	char	*str[] = {"O_APPEND", "O_ASYNC", "O_CLOEXEC", "O_CREAT", "O_DIRECT",
+"O_DIRECTORY", "O_DSYNC", "O_EXCL", "O_LARGEFILE", "O_NOATIME", "O_NOCTTY",
+"O_NOFOLLOW", "O_NONBLOCK", "O_PATH", "O_SYNC", "O_TMPFILE", "O_TRUNC"};
+
+	for (size_t i = 0; i < sizeof(flag_list) / sizeof(int); i++)
+	{
+		if (flags & flag_list[i])
+		{
+			if (!first)
+				fprintf(stderr, "|%s", str[i]);
+			else
+				fprintf(stderr, "%s", str[i]);
+			first = false;
+		}
+	}
+	if (!first)
+		fprintf(stderr, "|");
+	if (flags & O_WRONLY)
+		fprintf(stderr, "O_WRONLY");
+	else if (flags & O_RDWR)
+		fprintf(stderr, "O_RDWR");
+	else
+		fprintf(stderr, "O_RDONLY");
+}
+
 void			print_ptr(void *ptr)
 {
 	if (!ptr)

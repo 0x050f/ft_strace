@@ -4,6 +4,7 @@
 # define _GNU_SOURCE
 # include <elf.h>
 # include <errno.h>
+# include <fcntl.h>
 # include <sched.h>
 # include <stdarg.h>
 # include <stdbool.h>
@@ -63,6 +64,7 @@ int				get_syscalls(pid_t pid);
 void			print_siginfo(siginfo_t *si);
 void			print_argv(char **argv);
 void			print_string(pid_t pid, va_list ap);
+void			print_flag_open(int flags);
 void			print_ptr(void *ptr);
 
 #endif

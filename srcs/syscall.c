@@ -25,6 +25,10 @@ void			print_syscall(pid_t pid, syscall_t syscall, int argc, ...)
 			print_string(pid, ap);
 		else if (syscall.type_args[i] == PTR)
 			print_ptr(va_arg(ap, void *));
+		else if (syscall.type_args[i] == SIGNAL)
+			fprintf(stderr, "%s", sys_signame[va_arg(ap, int)]);
+		else if (syscall.type_args[i] == FLAG_OPEN)
+			print_flag_open(va_arg(ap, int));
 		else
 			fprintf(stderr, "%#lx", va_arg(ap, unsigned long));
 		if (i != argc - 1)

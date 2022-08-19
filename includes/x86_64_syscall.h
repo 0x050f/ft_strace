@@ -17,7 +17,7 @@
 [ 10] = {"mprotect", 3, {PTR, ULONG, INT, 0, 0, 0}, INT}, \
 [ 11] = {"munmap", 2, {PTR, ULONG, 0, 0, 0, 0}, INT}, \
 [ 12] = {"brk", 1, {PTR, 0, 0, 0, 0, 0}, PTR}, \
-[ 13] = {"rt_sigaction", 4, {INT, STRUCT_SIGACT, STRUCT_SIGACT, 0, 0, 0}, INT}, \
+[ 13] = {"rt_sigaction", 4, {SIGNAL, STRUCT_SIGACT, STRUCT_SIGACT, 0, 0, 0}, INT}, \
 [ 14] = {"rt_sigprocmask", 4, {INT, STRUCT_SIGSET, STRUCT_SIGSET, 0, 0, 0}, INT}, \
 [ 15] = {"rt_sigreturn", 0, {0, 0, 0, 0, 0, 0}, INT}, \
 [ 16] = {"ioctl", 3, {INT, ULONG, 0, 0, 0, 0}, INT}, \
@@ -261,7 +261,7 @@
 [254] = {"inotify_add_watch", 3, {0, 0, 0, 0, 0, 0}, 0}, \
 [255] = {"inotify_rm_watch", 2, {0, 0, 0, 0, 0, 0}, 0}, \
 [256] = {"migrate_pages", 4, {0, 0, 0, 0, 0, 0}, 0}, \
-[257] = {"openat", 4, {INT, STR, INT, MODE, 0, 0}, INT}, \
+[257] = {"openat", 4, {INT, STR, FLAG_OPEN, MODE, 0, 0}, INT}, \
 [258] = {"mkdirat", 3, {0, 0, 0, 0, 0, 0}, 0}, \
 [259] = {"mknodat", 4, {0, 0, 0, 0, 0, 0}, 0}, \
 [260] = {"fchownat", 5, {0, 0, 0, 0, 0, 0}, 0}, \

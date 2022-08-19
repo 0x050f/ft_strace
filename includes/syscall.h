@@ -58,7 +58,8 @@ typedef struct	syscall_s {
 # define ID_T				38
 # define DEV				39
 # define TIME				40
-# define ARGV				41
-# define ENVP				42
+# define SIGNAL				41
+# define ARGV				42
+# define ENVP				43
 
 #endif

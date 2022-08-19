@@ -44,10 +44,10 @@ int				strace(char *exec, char *argv[], char *envp[])
 		fprintf(stderr, "%s: ptrace: %s\n", prg_name, strerror(errno));
 	block_signals(pid);
 	status = get_syscalls(pid);
+	free(exec);
+	free(prg_name);
 	if (WIFSIGNALED(status))
 	{
-		free(exec);
-		free(prg_name);
 		fprintf(stderr, "+++ killed by %s +++\n", sys_signame[WTERMSIG(status)]);
 		kill(getpid(), WTERMSIG(status));
 	}
@@ -93,7 +93,5 @@ int				main(int argc, char *argv[], char *envp[])
 		return (EXIT_FAILURE);
 	}
 	ret = strace(exec, &argv[1], envp);
-	free(exec);
-	free(prg_name);
 	return (ret);
 }

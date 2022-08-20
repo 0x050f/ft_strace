@@ -26,7 +26,13 @@ void			print_syscall(pid_t pid, syscall_t syscall, int argc, ...)
 		else if (syscall.type_args[i] == PTR)
 			print_ptr(va_arg(ap, void *));
 		else if (syscall.type_args[i] == SIGNAL)
-			fprintf(stderr, "%s", sys_signame[va_arg(ap, int)]);
+		{
+			int signo = va_arg(ap, int);
+			if (signo < SYS_SIGNAME_COUNT)
+				fprintf(stderr, "%s", sys_signame[i]);
+			else
+				fprintf(stderr, "%d", i);
+		}
 		else if (syscall.type_args[i] == FLAG_OPEN)
 			print_flag_open(va_arg(ap, int));
 		else

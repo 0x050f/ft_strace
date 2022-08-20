@@ -1,6 +1,8 @@
 #ifndef SYS_SIGNAME_H
 # define SYS_SIGNAME_H
 
+# define SYS_SIGNAME_COUNT 33
+
 # define SYS_SIGNAME { \
 	[0] = NULL, \
 	[1] = "SIGHUP", \

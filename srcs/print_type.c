@@ -12,19 +12,26 @@ void			print_siginfo(siginfo_t *si)
 	char	*cld_si_code[] = CLD_SI_CODE;
 	char	*poll_si_code[] = POLL_SI_CODE;
 
-	if (si->si_signo == SIGILL)
+	if (si->si_signo == SIGILL
+&& si->si_code < (int)(sizeof(ill_si_code) / sizeof(char *)))
 		si_c = ill_si_code[si->si_code];
-	else if (si->si_signo == SIGFPE)
+	else if (si->si_signo == SIGFPE
+&& si->si_code < (int)(sizeof(fpe_si_code) / sizeof(char *)))
 		si_c = fpe_si_code[si->si_code];
-	else if (si->si_signo == SIGSEGV)
+	else if (si->si_signo == SIGSEGV
+&& si->si_code < (int)(sizeof(segv_si_code) / sizeof(char *)))
 		si_c = segv_si_code[si->si_code];
-	else if (si->si_signo == SIGBUS)
+	else if (si->si_signo == SIGBUS
+&& si->si_code < (int)(sizeof(bus_si_code) / sizeof(char *)))
 		si_c = bus_si_code[si->si_code];
-	else if (si->si_signo == SIGTRAP)
+	else if (si->si_signo == SIGTRAP
+&& si->si_code < (int)(sizeof(trap_si_code) / sizeof(char *)))
 		si_c = trap_si_code[si->si_code];
-	else if (si->si_signo == SIGCHLD)
+	else if (si->si_signo == SIGCHLD
+&& si->si_code < (int)(sizeof(cld_si_code) / sizeof(char *)))
 		si_c = cld_si_code[si->si_code];
-	else if (si->si_signo == SIGPOLL)
+	else if (si->si_signo == SIGPOLL
+&& si->si_code < (int)(sizeof(poll_si_code) / sizeof(char *)))
 		si_c = poll_si_code[si->si_code];
 	else
 	{
